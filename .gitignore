@@ -1,0 +1,64 @@
+# DB2 Docker Environment
+.env
+.env.local
+.env.*.local
+
+# Docker volumes
+db2_federated_data/
+db2_remote_data/
+
+# Backup files
+*.bak
+*.BAK
+backup/
+backups/
+*.sql.bak
+
+# Logs
+*.log
+db2diag.log
+diag/
+sqllib/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Misc
+*.tmp
+*.temp
+.cache/
+.local/
+
+# Test reports
+test-results/
+coverage/
+
+# Build artifacts
+dist/
+build/
