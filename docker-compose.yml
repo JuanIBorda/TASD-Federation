@@ -2,50 +2,94 @@ services:
   db2_federated:
     image: ibmcom/db2:11.5.8.0
     container_name: db2_federated
+    privileged: true
     ports:
       - "50000:50000"
     environment:
-      DB2INST1_PASSWORD: "db2inst1"
-      LICENSE: "accept"
-      DBNAME: "BASETASD"
-      DB2_WORKLOAD: "tasdlab"
+      DB2INST1_PASSWORD: "${DB2INST1_PASSWORD:-db2inst1}"
+      LICENSE: "${LICENSE:-accept}"
+      DBNAME: "${DBNAME_FEDERATED:-BASETASD}"
+      DB2_WORKLOAD: "${DB2_WORKLOAD:-tasdlab}"
+      ARCHIVE_LOGS: "${ARCHIVE_LOGS:-false}"
+      AUTOCONFIG: "${AUTOCONFIG:-false}"
     volumes:
-      - ./db2_federated_data:/database
+      - db2_federated_data:/database
       - ./scripts:/scripts:ro
       - ./data:/var/db2/files:ro
     networks:
       - db2_network
+    deploy:
+      resources:
+        limits:
+          memory: "${MEMORY_LIMIT:-8G}"
+          cpus: "${CPU_LIMIT:-2.0}"
+        reservations:
+          memory: "${MEMORY_RESERVATION:-4G}"
+          cpus: "${CPU_RESERVATION:-1.0}"
+    restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "db2", "connect", "to", "BASETASD" ]
+      test: [ "CMD", "db2", "connect", "to", "${DBNAME_FEDERATED:-BASETASD}" ]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-10m}"
+        max-file: "${LOG_MAX_FILE:-3}"
+    depends_on:
+      - db2_remote
 
   db2_remote:
     image: ibmcom/db2:11.5.8.0
     container_name: db2_remote
+    privileged: true
     ports:
       - "50001:50000"
     environment:
-      DB2INST1_PASSWORD: "db2inst1"
-      LICENSE: "accept"
-      DBNAME: "SAMPLE"
+      DB2INST1_PASSWORD: "${DB2INST1_PASSWORD:-db2inst1}"
+      LICENSE: "${LICENSE:-accept}"
+      DBNAME: "${DBNAME_REMOTE:-SAMPLE}"
       SAMPLEDATABASE: "true"
-      DB2_WORKLOAD: "tasdlab"
+      DB2_WORKLOAD: "${DB2_WORKLOAD:-tasdlab}"
+      ARCHIVE_LOGS: "${ARCHIVE_LOGS:-false}"
+      AUTOCONFIG: "${AUTOCONFIG:-false}"
     volumes:
-      - ./db2_remote_data:/database
+      - db2_remote_data:/database
       - ./scripts:/scripts:ro
       - ./data:/var/db2/files:ro
     networks:
       - db2_network
+    deploy:
+      resources:
+        limits:
+          memory: "${MEMORY_LIMIT:-8G}"
+          cpus: "${CPU_LIMIT:-2.0}"
+        reservations:
+          memory: "${MEMORY_RESERVATION:-4G}"
+          cpus: "${CPU_RESERVATION:-1.0}"
+    restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "db2", "connect", "to", "SAMPLE" ]
+      test: [ "CMD", "db2", "connect", "to", "${DBNAME_REMOTE:-SAMPLE}" ]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 300s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "${LOG_MAX_SIZE:-10m}"
+        max-file: "${LOG_MAX_FILE:-3}"
+
+volumes:
+  db2_federated_data:
+    driver: local
+  db2_remote_data:
+    driver: local
 
 networks:
   db2_network:
     driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: db2_bridge
