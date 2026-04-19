@@ -91,8 +91,7 @@ TASD-Federation/
 ├── setup.sh                     # Script de inicialización automática
 ├── README.md                    # Este archivo
 ├── scripts/
-│   ├── init_federation.sql      # Script de federación DB2
-│   └── init_sample_db.sql       # Script de inicialización SAMPLE
+│   └── init_federation.sql      # Script de federación DB2
 └── data/
     └── file_clientes2.txt       # Archivo CSV para FLATWRAPPER
 ```
@@ -131,7 +130,7 @@ bash setup.sh
 
 Este script:
 - ✅ Espera a que los contenedores estén listos
-- ✅ Inicializa la base de datos SAMPLE con tablas y datos
+- ✅ Verifica la base SAMPLE creada automáticamente por Docker
 - ✅ Configura la federación en BASETASD
 - ✅ Crea nicknames para consultas remotas
 - ✅ Verifica la configuración
@@ -282,7 +281,6 @@ environment:
 
 2. Editar scripts SQL con nueva contraseña en:
    - `scripts/init_federation.sql` (línea de CREATE USER MAPPING)
-   - `scripts/init_sample_db.sql` si es necesario
 
 3. Reiniciar contenedores:
 ```bash
