@@ -1,10 +1,7 @@
-version: '3.8'
-
 services:
   db2_federated:
-    image: ibmcom/db2:11.5.9.0-x86_64
+    image: ibmcom/db2:11.5.8.0
     container_name: db2_federated
-    platform: linux/amd64
     ports:
       - "50000:50000"
     environment:
@@ -13,47 +10,41 @@ services:
       DBNAME: "BASETASD"
       DB2_WORKLOAD: "tasdlab"
     volumes:
-      - db2_federated_data:/database
+      - ./db2_federated_data:/database
       - ./scripts:/scripts:ro
       - ./data:/var/db2/files:ro
     networks:
       - db2_network
     healthcheck:
-      test: ["CMD", "db2", "connect", "to", "BASETASD"]
+      test: [ "CMD", "db2", "connect", "to", "BASETASD" ]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 60s
 
   db2_remote:
-    image: ibmcom/db2:11.5.9.0-x86_64
+    image: ibmcom/db2:11.5.8.0
     container_name: db2_remote
-    platform: linux/amd64
     ports:
       - "50001:50000"
     environment:
       DB2INST1_PASSWORD: "db2inst1"
       LICENSE: "accept"
       DBNAME: "SAMPLE"
+      SAMPLEDATABASE: "true"
       DB2_WORKLOAD: "tasdlab"
     volumes:
-      - db2_remote_data:/database
+      - ./db2_remote_data:/database
       - ./scripts:/scripts:ro
       - ./data:/var/db2/files:ro
     networks:
       - db2_network
     healthcheck:
-      test: ["CMD", "db2", "connect", "to", "SAMPLE"]
+      test: [ "CMD", "db2", "connect", "to", "SAMPLE" ]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 60s
-
-volumes:
-  db2_federated_data:
-    driver: local
-  db2_remote_data:
-    driver: local
 
 networks:
   db2_network:

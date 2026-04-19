@@ -176,22 +176,29 @@ db2 "SELECT TABNAME, REMOTE_NAME FROM SYSCAT.NICKTAB"
 **Puerto de Acceso Remoto**: `50001` (localhost:50001)
 **Puerto Interno**: `50000`
 
-**Tablas Disponibles**:
+**Base de Datos**: SAMPLE (base oficial de IBM DB2)
+- **32 tablas** con datos de ejemplo reales
+- **Esquema organizacional**: DEPARTMENT, EMPLOYEE, PROJECT, etc.
+- **Esquema XML**: PURCHASEORDER, CUSTOMER, CATALOG, etc.
+- **Datos BLOB/CLOB**: Fotos y resumes de empleados
+- **Relaciones complejas** y constraints
 
-1. **DEPARTMENT**
+**Tablas principales utilizadas en federación**:
+
+1. **DEPARTMENT** (14 filas)
    - DEPTNO (PK): Código de departamento
    - DEPTNAME: Nombre del departamento
    - MGRNO: Número del gerente
    - ADMRDEPT: Departamento administrativo
 
-2. **EMPLOYEE**
+2. **EMPLOYEE** (32 filas)
    - EMPNO (PK): Número de empleado
    - FIRSTNME/LASTNAME: Nombre completo
    - WORKDEPT: Departamento asignado
    - HIREDATE: Fecha de contratación
    - SALARY/BONUS/COMM: Compensación
 
-3. **PROJECT**
+3. **PROJECT** (6 filas)
    - PROJNO (PK): Número de proyecto
    - PROJNAME: Nombre del proyecto
    - DEPTNO: Departamento responsable

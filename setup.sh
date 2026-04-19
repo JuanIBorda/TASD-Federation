@@ -36,18 +36,27 @@ echo ""
 echo "1. Esperando a que los contenedores DB2 estén listos..."
 sleep 20
 
-# 2. Inicializar el nodo remoto (SAMPLE) con tablas y datos
+# 2. Verificar que la base SAMPLE esté inicializada (creada automáticamente por Docker)
 echo ""
-echo "2. Inicializando base de datos SAMPLE en db2_remote..."
+echo "2. Verificando base de datos SAMPLE en db2_remote..."
 docker exec -i db2_remote db2 connect to SAMPLE > /dev/null 2>&1 || {
-    print_error "No se pudo conectar a SAMPLE"
-    exit 1
+    print_error "La base SAMPLE no está lista aún. Esperando..."
+    sleep 30
+    docker exec -i db2_remote db2 connect to SAMPLE > /dev/null 2>&1 || {
+        print_error "No se pudo conectar a SAMPLE después de esperar"
+        exit 1
+    }
 }
 
+# Verificar que las tablas principales existen
 docker exec -i db2_remote bash -c "
     su - db2inst1 << 'EOF'
     db2 connect to SAMPLE
-    db2 -f /scripts/init_sample_db.sql
+    echo 'Verificando tablas principales...'
+    db2 \"SELECT COUNT(*) FROM DEPARTMENT\" > /dev/null && echo '✓ Tabla DEPARTMENT OK' || echo '✗ Tabla DEPARTMENT faltante'
+    db2 \"SELECT COUNT(*) FROM EMPLOYEE\" > /dev/null && echo '✓ Tabla EMPLOYEE OK' || echo '✗ Tabla EMPLOYEE faltante'
+    db2 \"SELECT COUNT(*) FROM PROJECT\" > /dev/null && echo '✓ Tabla PROJECT OK' || echo '✗ Tabla PROJECT faltante'
+EOF"
     db2 connect reset
     exit
 EOF

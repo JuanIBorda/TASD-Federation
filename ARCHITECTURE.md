@@ -87,17 +87,25 @@ Tipo: Federador DRDA
 ```yaml
 Imagen: ibmcom/db2:11.5.9.0-x86_64
 Contenedor: db2_remote
-BD: SAMPLE
+BD: SAMPLE (base oficial IBM DB2)
 Puerto Externo: 50001
 Puerto Interno: 50000
 Network: db2_network
-Tipo: Servidor de Datos
+Tipo: Servidor de Datos con SAMPLE Database
 ```
 
-**Componentes de DB2**:
-- **Buffer Pools**: Pool por defecto (IBMDEFAULTBP)
-- **Tablespaces**: USERSPACE1, SYSCATSPACE, TEMPSPACE1
-- **Gestor de Transacciones**: Soporte para transacciones distribuidas
+**Base de Datos SAMPLE (Oficial IBM)**:
+- **32 tablas** completamente pobladas
+- **Esquema organizacional**: DEPARTMENT, EMPLOYEE, PROJECT, STAFF, etc.
+- **Esquema XML**: PURCHASEORDER, CUSTOMER, SUPPLIERS, etc.
+- **Datos BLOB/CLOB**: Fotos y resumes de empleados
+- **Relaciones FK** y constraints completos
+- **Datos de producción realista** para testing
+
+**Tablas federadas**:
+- DEPARTMENT (14 registros)
+- EMPLOYEE (32 registros) 
+- PROJECT (6 registros)
 - **Lock Manager**: Manejo de bloqueos distribuidos
 
 ### 2. Wrappers (Adaptadores Federados)
