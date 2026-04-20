@@ -1,128 +1,55 @@
 #!/bin/bash
 # ============================================================================
 # setup.sh
-# Script de inicialización de la federación DB2 en Docker
-# Uso: ./setup.sh
+# Script de inicialización del laboratorio de federación
 # ============================================================================
 
 set -e
 
-echo "=========================================="
-echo "TASD-Federation Docker Setup"
-echo "=========================================="
-echo ""
-
-# Colores para output
-RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Función para imprimir con color
-print_status() {
-    echo -e "${GREEN}[✓]${NC} $1"
-}
+echo "=========================================="
+echo "TASD-Federation Setup"
+echo "=========================================="
 
-print_warning() {
-    echo -e "${YELLOW}[!]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[✗]${NC} $1"
-}
-
-# 1. Esperar a que los contenedores estén listos
-echo ""
-echo "1. Esperando a que los contenedores DB2 estén listos..."
+# 1. Esperar contenedores
+echo "1. Validando estado de los contenedores..."
 sleep 20
 
-# 2. Verificar que la base SAMPLE esté inicializada (creada automáticamente por Docker)
-echo ""
-echo "2. Verificando base de datos SAMPLE en db2_remote..."
-docker exec -i db2_remote bash -c "su - db2inst1 -c 'db2 connect to SAMPLE'" > /dev/null 2>&1 || {
-    print_error "La base SAMPLE no está lista aún. Esperando..."
-    sleep 30
-    docker exec -i db2_remote bash -c "su - db2inst1 -c 'db2 connect to SAMPLE'" > /dev/null 2>&1 || {
-        print_error "No se pudo conectar a SAMPLE después de esperar"
-        exit 1
-    }
-}
+# 2. Inicializar SAMPLE en remoto
+echo "2. Inicializando base de datos SAMPLE remota..."
+docker exec -i db2_remote bash -c "su - db2inst1 -c 'db2sampl -force'" > /dev/null 2>&1 || echo -e "${YELLOW}[!]${NC} Aviso en db2sampl"
 
-# Verificar que las tablas principales existen
-docker exec -i db2_remote bash -c "
-    su - db2inst1 << 'EOF'
-    db2 connect to SAMPLE
-    echo 'Verificando tablas principales...'
-    db2 \"SELECT COUNT(*) FROM DEPARTMENT\" > /dev/null && echo '✓ Tabla DEPARTMENT OK' || echo '✗ Tabla DEPARTMENT faltante'
-    db2 \"SELECT COUNT(*) FROM EMPLOYEE\" > /dev/null && echo '✓ Tabla EMPLOYEE OK' || echo '✗ Tabla EMPLOYEE faltante'
-    db2 \"SELECT COUNT(*) FROM PROJECT\" > /dev/null && echo '✓ Tabla PROJECT OK' || echo '✗ Tabla PROJECT faltante'
-    db2 connect reset
-    exit
-EOF
-" || print_warning "Algunas operaciones pueden haber fallado en SAMPLE"
-
-print_status "Base de datos SAMPLE inicializada"
-
-# 3. Inicializar federación en el nodo federador (BASETASD)
-echo ""
-echo "3. Inicializando federación en db2_federated..."
-
+# 3. Configurar federación y carga de datos
+echo "3. Configurando federación y cargando archivos locales..."
 docker exec -i db2_federated bash -c "
     su - db2inst1 << 'EOF'
-    db2 connect to BASETASD
-    db2 -f /scripts/init_federation.sql
-    db2 connect reset
-    exit
-EOF
-" || print_warning "Algunas operaciones pueden haber fallado en la federación"
-
-print_status "Federación inicializada en BASETASD"
-
-# 4. Verificar estado de nicknames
-echo ""
-echo "4. Verificando nicknames creados..."
-
-docker exec -i db2_federated bash -c "
-    su - db2inst1 << 'EOF'
-    db2 connect to BASETASD
-    db2 'SELECT TABNAME FROM SYSCAT.NICKTAB' 2>/dev/null || echo 'No se pudo verificar nicknames'
-    db2 connect reset
-    exit
-EOF
-" || print_warning "No se pudo verificar nicknames"
-
-# 5. Prueba de conexión remota (opcional)
-echo ""
-echo "5. Prueba de federación (consultando datos del servidor remoto)..."
-
-docker exec -i db2_federated bash -c "
-    su - db2inst1 << 'EOF'
-    db2 connect to BASETASD
-    echo 'Consultando DEPARTMENT del servidor remoto:'
-    db2 'SELECT * FROM db2Ldept FETCH FIRST 5 ROWS ONLY' 2>/dev/null || echo 'Consulta de federación completada'
-    db2 connect reset
+    db2 update dbm cfg using federated YES > /dev/null
+    
+    # Catalogación del nodo remoto
+    db2 uncatalog db SAMPLE > /dev/null 2>&1
+    db2 uncatalog node NODO_REM > /dev/null 2>&1
+    db2 catalog tcpip node NODO_REM remote db2_remote server 50000 > /dev/null
+    db2 catalog db SAMPLE as SAMPLE at node NODO_REM > /dev/null
+    
+    # Creación de objetos (Nicknames y tablas locales)
+    db2 connect to BASETASD > /dev/null
+    db2 -tf /scripts/init_federation.sql > /dev/null
+    
+    # Importación de los datos del CSV
+    db2 connect to BASETASD > /dev/null
+    db2 \"IMPORT FROM /var/db2/files/file_clientes2.txt OF DEL INSERT INTO FILECLIENTES2\" > /dev/null
+    
+    db2 connect reset > /dev/null
     exit
 EOF
 "
 
-print_status "Setup completado exitosamente"
-
-echo ""
-echo "=========================================="
-echo "Próximos pasos:"
-echo "=========================================="
-echo "1. Conectarse al nodo federador:"
-echo "   docker exec -it db2_federated bash"
-echo "   su - db2inst1"
-echo "   db2 connect to BASETASD"
-echo ""
-echo "2. Consultar datos federados:"
-echo "   db2 'SELECT * FROM db2Lemp'"
-echo ""
-echo "3. Acceder al archivo plano del FLATWRAPPER:"
-echo "   db2 'SELECT * FROM FILECLIENTES2'"
-echo ""
-echo "Base de datos disponibles:"
-echo "  - Nodo Federador: db2_federated (BASETASD) puerto 50000"
-echo "  - Nodo Remoto: db2_remote (SAMPLE) puerto 50001"
+echo -e "\n${GREEN}==========================================${NC}"
+echo -e "${GREEN} LABORATORIO LISTO PARA USAR${NC}"
+echo -e "${GREEN}==========================================${NC}"
+echo "Usa 'db2 list db directory' en db2_federated para ver las bases."
+echo "Explora los Nicknames y la tabla FILECLIENTES2 en BASETASD."
 echo "=========================================="

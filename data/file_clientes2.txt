@@ -1,16 +1,8 @@
-CLIENTEID,NOMBRE,APELLIDO,EMAIL,TELEFONO,CIUDAD,PROVINCIA,CODIGOPOSTAL,FECHAREGISTRO,ESTADO
-C001,"Juan","García","juan.garcia@email.com","+54-11-2345-6789","Buenos Aires","CABA","1428","2022-03-15","Activo"
-C002,"María","López","maria.lopez@email.com","+54-11-3456-7890","Buenos Aires","CABA","1425","2022-05-20","Activo"
-C003,"Carlos","Múñoz","carlos.munoz@email.com","+54-11-4567-8901","La Plata","Buenos Aires","1900","2022-07-10","Activo"
-C004,"Ana","Rodríguez","ana.rodriguez@email.com","+54-11-5678-9012","Mar del Plata","Buenos Aires","7600","2022-09-05","Inactivo"
-C005,"Roberto","Pérez","roberto.perez@email.com","+54-11-6789-0123","Córdoba","Córdoba","5000","2022-11-12","Activo"
-C006,"Laura","Fernández","laura.fernandez@email.com","+54-11-7890-1234","Rosario","Santa Fe","2000","2023-01-08","Activo"
-C007,"Diego","Sánchez","diego.sanchez@email.com","+54-11-8901-2345","Mendoza","Mendoza","5500","2023-03-22","Activo"
-C008,"Patricia","Gómez","patricia.gomez@email.com","+54-11-9012-3456","Tucumán","Tucumán","4000","2023-05-30","Activo"
-C009,"Fernando","Martínez","fernando.martinez@email.com","+54-11-0123-4567","Salta","Salta","4400","2023-07-14","Activo"
-C010,"Silvia","Torres","silvia.torres@email.com","+54-11-1234-5678","La Rioja","La Rioja","5300","2023-09-19","Inactivo"
-C011,"Alejandro","Castro","alejandro.castro@email.com","+54-11-2345-6789","San Juan","San Juan","5400","2023-11-25","Activo"
-C012,"Gabriela","Díaz","gabriela.diaz@email.com","+54-11-3456-7890","Santa Fe","Santa Fe","3000","2024-01-10","Activo"
-C013,"Andrés","Vega","andres.vega@email.com","+54-11-4567-8901","Jujuy","Jujuy","4600","2024-03-05","Activo"
-C014,"Mariana","Rivera","mariana.rivera@email.com","+54-11-5678-9012","Catamarca","Catamarca","4700","2024-05-12","Activo"
-C015,"Miguel","Ortiz","miguel.ortiz@email.com","+54-11-6789-0123","Formosa","Formosa","3600","2024-07-20","Activo"
+23,Edgardo Perez,12798
+28,Mariana Bermudez,2866
+67,Santiago Sanchez,928
+68,Hernan Sanchez,928
+100,Theodore Spenser,1200
+134,Mercedes Barberis,2390
+200,David Brown,400
+113,Lana Beatty,5000
