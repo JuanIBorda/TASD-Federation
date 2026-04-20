@@ -22,8 +22,12 @@ sleep 20
 echo "2. Inicializando base de datos SAMPLE remota..."
 docker exec -i db2_remote bash -c "su - db2inst1 -c 'db2sampl -force'" > /dev/null 2>&1 || echo -e "${YELLOW}[!]${NC} Aviso en db2sampl"
 
-# 3. Configurar federación y carga de datos
-echo "3. Configurando federación y cargando archivos locales..."
+# 3. Preparar archivo local en /tmp para External Table
+echo "3. Preparando archivos locales para External Table..."
+docker exec db2_federated bash -c "cp /var/db2/files/file_clientes2.txt /tmp/file_clientes2.txt && chown db2inst1:db2iadm1 /tmp/file_clientes2.txt && chmod 666 /tmp/file_clientes2.txt"
+
+# 4. Configurar federación
+echo "4. Configurando federación (Wrappers, Servers y External Tables)..."
 docker exec -i db2_federated bash -c "
     su - db2inst1 << 'EOF'
     db2 update dbm cfg using federated YES > /dev/null
@@ -34,13 +38,9 @@ docker exec -i db2_federated bash -c "
     db2 catalog tcpip node NODO_REM remote db2_remote server 50000 > /dev/null
     db2 catalog db SAMPLE as SAMPLE at node NODO_REM > /dev/null
     
-    # Creación de objetos (Nicknames y tablas locales)
+    # Creación de objetos
     db2 connect to BASETASD > /dev/null
     db2 -tf /scripts/init_federation.sql > /dev/null
-    
-    # Importación de los datos del CSV
-    db2 connect to BASETASD > /dev/null
-    db2 \"IMPORT FROM /var/db2/files/file_clientes2.txt OF DEL INSERT INTO FILECLIENTES2\" > /dev/null
     
     db2 connect reset > /dev/null
     exit
@@ -50,6 +50,6 @@ EOF
 echo -e "\n${GREEN}==========================================${NC}"
 echo -e "${GREEN} LABORATORIO LISTO PARA USAR${NC}"
 echo -e "${GREEN}==========================================${NC}"
-echo "Usa 'db2 list db directory' en db2_federated para ver las bases."
-echo "Explora los Nicknames y la tabla FILECLIENTES2 en BASETASD."
+echo "FILECLIENTES2 es ahora de tipo 'X' (External Table)."
+echo "Usa 'db2 connect to BASETASD' y luego 'db2 select * from FILECLIENTES2'."
 echo "=========================================="
