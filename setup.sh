@@ -39,10 +39,10 @@ sleep 20
 # 2. Verificar que la base SAMPLE esté inicializada (creada automáticamente por Docker)
 echo ""
 echo "2. Verificando base de datos SAMPLE en db2_remote..."
-docker exec -i db2_remote db2 connect to SAMPLE > /dev/null 2>&1 || {
+docker exec -i db2_remote bash -c "su - db2inst1 -c 'db2 connect to SAMPLE'" > /dev/null 2>&1 || {
     print_error "La base SAMPLE no está lista aún. Esperando..."
     sleep 30
-    docker exec -i db2_remote db2 connect to SAMPLE > /dev/null 2>&1 || {
+    docker exec -i db2_remote bash -c "su - db2inst1 -c 'db2 connect to SAMPLE'" > /dev/null 2>&1 || {
         print_error "No se pudo conectar a SAMPLE después de esperar"
         exit 1
     }
@@ -56,7 +56,6 @@ docker exec -i db2_remote bash -c "
     db2 \"SELECT COUNT(*) FROM DEPARTMENT\" > /dev/null && echo '✓ Tabla DEPARTMENT OK' || echo '✗ Tabla DEPARTMENT faltante'
     db2 \"SELECT COUNT(*) FROM EMPLOYEE\" > /dev/null && echo '✓ Tabla EMPLOYEE OK' || echo '✗ Tabla EMPLOYEE faltante'
     db2 \"SELECT COUNT(*) FROM PROJECT\" > /dev/null && echo '✓ Tabla PROJECT OK' || echo '✗ Tabla PROJECT faltante'
-EOF"
     db2 connect reset
     exit
 EOF
